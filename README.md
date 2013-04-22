@@ -36,10 +36,10 @@ After we register the Sensors, the sensor reading get notified in `SensorEventLi
 <br><br>Moral of the story is...
 > Allow only those values which are useful and discard the unnecessary noise.
 
-The solution for this is to apply a **Low-Pass Filter** on these values.
+The solution for this is to apply a **[Low-Pass Filter](http://en.wikipedia.org/wiki/Low-pass_filter)** on these values.
 
 ## A Small Glimpse of Low Pass Filter ##
-A low-pass filter is a filter that passes low-frequency signals/values and attenuates (reduces the amplitude of) signals/values with frequencies higher than the cutoff frequency.<br>
+A [low-pass filter](http://en.wikipedia.org/wiki/Low-pass_filter) is a filter that passes low-frequency signals/values and attenuates (reduces the amplitude of) signals/values with frequencies higher than the cutoff frequency.<br>
 Let us take an example of simple signal with values ranging from 0 to 1. The values can be anything between 0 to 1.
 Due to some external source, environmental factors such as jerks, vibrations., a considerable amount of noise is added to these signals. These high frequency signals (noise) cause the readings to hop between considerable high and low values.
 <br>
@@ -64,15 +64,9 @@ Lets see how to implement it in Android.<br>
 The above method filters the input values and applies LPF and outputs the filtered signals<br><br>
 `static final float ALPHA = 0.25f; // if ALPHA = 1 OR 0, no filter applies.`
 
-
-`protected float[] lowPass( float[] input, float[] output ) {
-	    if ( output == null ) return input;`
-	     
-	    for ( int i=0; i<input.length; i++ ) {
-	        output[i] = output[i] + ALPHA * (input[i] - output[i]);
-	    }
-	    return output;
-	}//end of method`
+<br>![image](https://dl.dropboxusercontent.com/u/2906868/low%20pass%20filter.png)
+<br>Low-Pass Filter is finally applied to sensor values in `onSensorChanged(SensorEvent event)` as follows:<br><br>
+![image](https://dl.dropboxusercontent.com/u/2906868/LPF.png)
 
 <br>An example of this can be found [here](https://github.com/Bhide/AugmentedRealityView.git).
 <br>Here i have applied low pass filter for `Sensor.TYPE_ACCELEROMETER` and `Sensor.TYPE_MAGNETIC_FIELD`.
