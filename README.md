@@ -64,9 +64,48 @@ Lets see how to implement it in Android.<br>
 The above method filters the input values and applies LPF and outputs the filtered signals<br><br>
 `static final float ALPHA = 0.25f; // if ALPHA = 1 OR 0, no filter applies.`
 
-<br>![image](https://dl.dropboxusercontent.com/u/2906868/low%20pass%20filter.png)
+	protected float[] lowPass( float[] input, float[] output ) {
+	    if ( output == null ) return input;
+	     
+	    for ( int i=0; i<input.length; i++ ) {
+	        output[i] = output[i] + ALPHA * (input[i] - output[i]);
+	    }
+	    return output;
+	}
+
 <br>Low-Pass Filter is finally applied to sensor values in `onSensorChanged(SensorEvent event)` as follows:<br><br>
-![image](https://dl.dropboxusercontent.com/u/2906868/LPF.png)
+
+	@Override
+	public void onSensorChanged(SensorEvent evt) {
+
+
+		if (evt.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+			gravSensorVals = lowPass(evt.values.clone(), gravSensorVals);
+
+		} else if (evt.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+			magSensorVals = lowPass(evt.values.clone(), magSensorVals);
+		}
+		
+		if (gravSensorVals != null && magSensorVals != null) {
+			SensorManager.getRotationMatrix(RTmp, I, gravSensorVals, magSensorVals);
+
+			int rotation = Compatibility.getRotation(this);
+
+			if (rotation == 1) {
+				SensorManager.remapCoordinateSystem(RTmp, SensorManager.AXIS_X, SensorManager.AXIS_MINUS_Z, Rot);
+			} else {
+				SensorManager.remapCoordinateSystem(RTmp, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_Z, Rot);
+			}
+
+			SensorManager.getOrientation(Rot, results);
+
+			UIARView.azimuth = (float)(((results[0]*180)/Math.PI)+180);
+			UIARView.pitch = (float)(((results[1]*180/Math.PI))+90);
+			UIARView.roll = (float)(((results[2]*180/Math.PI)));
+
+			radarMarkerView.postInvalidate();
+		}
+	}
 
 <br>An example of this can be found [here](https://github.com/Bhide/AugmentedRealityView.git).
 <br>Here i have applied low pass filter for `Sensor.TYPE_ACCELEROMETER` and `Sensor.TYPE_MAGNETIC_FIELD`.
